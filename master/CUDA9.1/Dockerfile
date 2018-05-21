@@ -13,7 +13,7 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get upgrade -y && \
 
 # 1. ------------ Installing Anaconda3  ------------------ 
 
-COPY response /tmp/
+COPY response /tmp
 
 RUN cd /tmp && \
     wget https://repo.anaconda.com/archive/Anaconda3-5.1.0-Linux-ppc64le.sh &&\
@@ -29,25 +29,27 @@ RUN pip install IPython==5.3 &&\
     mkdir /root/.jupyter &&\
     echo "c.NotebookApp.ip = '*'" > ~/.jupyter/jupyter_notebook_config.py
 
-# 2. ------------ Installing Keras and Theano  ------------------ 
+# 2. ------------ Installing Pytorch   ------------------ 
 
-RUN pip install Keras &&\
-    pip install Theano
+RUN conda install numpy pyyaml setuptools cmake cffi typing
 
-# 3. ------------ Keras : Switching to the Theano backend  ------------------
+RUN mkdir /opt/Pytorch &&\
+    cd /opt/Pytorch &&\
+    git clone https://github.com/pytorch/pytorch.git &&\
+    export CMAKE_PREFIX_PATH="$(dirname $(which conda))/../" &&\
+    cd /opt/Pytorch/pytorch &&\
+    git submodule update --init &&\
+    sed -i -e 441a"set(BUILD_GNUABI_LIBS OFF CACHE BOOL \"Don't build sleef gnuabi libs\" FORCE)" /opt/Pytorch/pytorch/aten/src/ATen/CMakeLists.txt &&\
+    python setup.py install
 
-RUN mkdir /root/.keras
+# 3. ------------ install nccl  ------------------
 
-COPY keras.json /root/.keras
-
-# 4. ------------ install nccl  ------------------
-
-RUN cd / && \
+RUN cd /opt && \
    git clone https://github.com/NVIDIA/nccl.git && \
-   cd /nccl  && \
+   cd /opt/nccl  && \
    make CUDA_HOME=/usr/local/cuda test 
    
-ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/nccl/build/lib
+ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/nccl/build/lib
 
 #     ------------------------ END --------------------------------
 
@@ -69,6 +71,5 @@ ENV LANGUAGE=ja_JP
 ENV LANG=ja_JP.UTF-8
 
 RUN rm -f /tmp/response
-RUN rm -f /tmp/Anaconda*
 
 CMD []
