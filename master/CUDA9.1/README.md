@@ -3,6 +3,6 @@
 OS|Ubuntu 16.04
 Anaconda|3
 Python|3
-Keras| Theano base
+Pytorch| master
 CUDA|CUDA 9.1 
 cuDNN|7
