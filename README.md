@@ -1,4 +1,4 @@
-# Keras Dockerfile for ppc64le
+# Pytorch Dockerfile for ppc64le
 
 ```
 # ls
